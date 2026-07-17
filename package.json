@@ -1,0 +1,41 @@
+{
+  "name": "product-callback-warner",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "db:migrate": "tsx src/lib/db/migrate.ts",
+    "db:generate": "tsx src/lib/db/generate-migration.ts"
+  },
+  "dependencies": {
+    "fuse.js": "^7.0.0",
+    "next": "^16.2.10",
+    "pg": "^8.13.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tesseract.js": "^5.1.0",
+    "tsx": "^4.19.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^22.20.1",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.7.0",
+    "autoprefixer": "^10.5.4",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.2.10",
+    "jsdom": "^26.1.0",
+    "postcss": "^8.5.19",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}
