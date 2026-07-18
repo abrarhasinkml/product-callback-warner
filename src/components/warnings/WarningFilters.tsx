@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/context";
+
 interface WarningFiltersProps {
   urgencyFilter: string;
   onUrgencyChange: (urgency: string) => void;
@@ -8,14 +10,6 @@ interface WarningFiltersProps {
   states: string[];
 }
 
-const URGENCY_OPTIONS = [
-  { value: "all", label: "Alle" },
-  { value: "critical", label: "Kritisch" },
-  { value: "high", label: "Hoch" },
-  { value: "medium", label: "Mittel" },
-  { value: "low", label: "Niedrig" },
-];
-
 export default function WarningFilters({
   urgencyFilter,
   onUrgencyChange,
@@ -23,10 +17,20 @@ export default function WarningFilters({
   onStateClear,
   states,
 }: WarningFiltersProps) {
+  const { t } = useI18n();
+
+  const urgencyOptions = [
+    { value: "all", label: t.filterAll },
+    { value: "critical", label: t.filterCritical },
+    { value: "high", label: t.filterHigh },
+    { value: "medium", label: t.filterMedium },
+    { value: "low", label: t.filterLow },
+  ];
+
   return (
     <div className="flex flex-wrap items-center gap-3">
       <div className="flex flex-wrap gap-1">
-        {URGENCY_OPTIONS.map((opt) => (
+        {urgencyOptions.map((opt) => (
           <button
             key={opt.value}
             onClick={() => onUrgencyChange(opt.value)}
@@ -47,7 +51,7 @@ export default function WarningFilters({
           <button
             onClick={onStateClear}
             className="text-slate-500 hover:text-slate-300 text-sm leading-none"
-            aria-label="Filter entfernen"
+            aria-label={t.filterRemove}
           >
             &times;
           </button>
@@ -58,17 +62,13 @@ export default function WarningFilters({
         <select
           value=""
           onChange={(e) => {
-            if (e.target.value) {
-              onStateClear();
-            }
+            if (e.target.value) onStateClear();
           }}
           className="bg-surface-700 text-slate-400 text-xs rounded-lg px-3 py-1.5 border border-surface-600 focus:outline-none focus:border-amber-500"
         >
-          <option value="">Bundesland filtern...</option>
+          <option value="">{t.filterState}</option>
           {states.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
       )}
