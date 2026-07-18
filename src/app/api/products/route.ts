@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createProduct } from "@/lib/db/operations";
 import { matchProducts } from "@/lib/match";
+import { triggerIngestIfNeeded } from "@/lib/ingest/trigger";
 
 export async function POST(request: NextRequest) {
   try {

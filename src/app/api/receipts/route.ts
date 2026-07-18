@@ -4,6 +4,7 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { createReceipt, createProduct } from "@/lib/db/operations";
 import { matchProducts } from "@/lib/match";
+import { triggerIngestIfNeeded } from "@/lib/ingest/trigger";
 
 const UPLOAD_DIR = path.join(process.cwd(), "uploads");
 
@@ -59,6 +60,8 @@ export async function POST(request: NextRequest) {
       createdProducts.length > 0
         ? await matchProducts(createdProducts.map((p) => p.id))
         : [];
+
+    triggerIngestIfNeeded();
 
     return NextResponse.json(
       {

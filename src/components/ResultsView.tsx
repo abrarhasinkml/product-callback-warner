@@ -8,20 +8,40 @@ interface ResultsViewProps {
   products: Product[];
 }
 
-const URGENCY_COLORS: Record<string, string> = {
-  critical: "bg-red-100 text-red-800 border-red-300",
-  high: "bg-orange-100 text-orange-800 border-orange-300",
-  medium: "bg-yellow-100 text-yellow-800 border-yellow-300",
-  low: "bg-blue-100 text-blue-800 border-blue-300",
-  info: "bg-gray-100 text-gray-800 border-gray-300",
-};
-
-const URGENCY_LABELS: Record<string, string> = {
-  critical: "CRITICAL",
-  high: "HIGH",
-  medium: "MEDIUM",
-  low: "LOW",
-  info: "INFO",
+const URGENCY_STYLES: Record<
+  string,
+  { border: string; badge: string; badgeText: string; label: string }
+> = {
+  critical: {
+    border: "border-l-red-500",
+    badge: "bg-red-500/20",
+    badgeText: "text-red-400",
+    label: "KRITISCH",
+  },
+  high: {
+    border: "border-l-orange-400",
+    badge: "bg-orange-400/20",
+    badgeText: "text-orange-400",
+    label: "HOCH",
+  },
+  medium: {
+    border: "border-l-amber-500",
+    badge: "bg-amber-500/20",
+    badgeText: "text-amber-400",
+    label: "MITTEL",
+  },
+  low: {
+    border: "border-l-slate-500",
+    badge: "bg-slate-500/20",
+    badgeText: "text-slate-400",
+    label: "NIEDRIG",
+  },
+  info: {
+    border: "border-l-slate-600",
+    badge: "bg-slate-600/20",
+    badgeText: "text-slate-500",
+    label: "INFO",
+  },
 };
 
 export default function ResultsView({ matches, products }: ResultsViewProps) {
@@ -29,7 +49,7 @@ export default function ResultsView({ matches, products }: ResultsViewProps) {
 
   const getProductName = (productId: string) => {
     const product = products.find((p) => p.id === productId);
-    return product?.name || "Unknown Product";
+    return product?.name || "Unbekanntes Produkt";
   };
 
   const toggleExpand = (key: string) => {
@@ -38,12 +58,13 @@ export default function ResultsView({ matches, products }: ResultsViewProps) {
 
   if (matches.length === 0) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
-        <h2 className="text-xl font-semibold text-green-800 mb-2">
-          No Recalls Found
+      <div className="bg-surface-800 border border-emerald-500/20 rounded-2xl p-8 text-center">
+        <div className="text-4xl mb-3">&#x2705;</div>
+        <h2 className="text-xl font-semibold text-emerald-400 mb-2">
+          Keine R&uuml;ckrufe gefunden
         </h2>
-        <p className="text-green-700">
-          None of your products match current recall warnings.
+        <p className="text-slate-400 text-sm">
+          Keine Ihrer Produkte stimmt mit aktuellen Warnungen &uuml;berein.
         </p>
       </div>
     );
@@ -51,84 +72,100 @@ export default function ResultsView({ matches, products }: ResultsViewProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-gray-900">Recall Matches Found</h2>
-      <p className="text-gray-600">
-        {matches.length} of your product{matches.length !== 1 ? "s" : ""} match
-        current recall warnings.
-      </p>
+      <div>
+        <h2 className="text-xl font-bold text-slate-100">
+          R&uuml;ckrufe gefunden
+        </h2>
+        <p className="text-sm text-slate-400 mt-1">
+          {matches.length} Ihrer Produkte stimmen mit aktuellen Warnungen
+          &uuml;berein.
+        </p>
+      </div>
 
       {matches.map((match, idx) => {
         const key = `${match.product_id}-${idx}`;
+        const tier = match.urgency_tier || "info";
+        const style = URGENCY_STYLES[tier] ?? URGENCY_STYLES.info;
+
         return (
           <div
             key={key}
-            className={`border rounded-lg p-4 ${
-              URGENCY_COLORS[match.urgency_tier] || URGENCY_COLORS.info
-            }`}
+            className={`bg-surface-800 rounded-xl border-l-4 ${style.border} p-4 sm:p-5`}
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-semibold text-lg">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-slate-100 truncate">
                   {match.warning.product_name}
                 </h3>
-                <p className="text-sm opacity-80">
-                  Your product: {getProductName(match.product_id)}
+                <p className="text-sm text-slate-400 mt-0.5">
+                  Ihr Produkt: {getProductName(match.product_id)}
                 </p>
                 {match.warning.manufacturer && (
-                  <p className="text-sm opacity-80">
-                    Manufacturer: {match.warning.manufacturer}
+                  <p className="text-sm text-slate-500">
+                    Hersteller: {match.warning.manufacturer}
                   </p>
                 )}
               </div>
-              <span className="px-2 py-1 text-xs font-bold rounded border">
-                {URGENCY_LABELS[match.urgency_tier] || match.urgency_tier}
+              <span
+                className={`text-xs font-bold px-2 py-1 rounded ${style.badge} ${style.badgeText} whitespace-nowrap`}
+              >
+                {style.label}
               </span>
             </div>
 
-            <div className="mt-3">
-              <p className="text-sm font-medium">
-                Reason: {match.warning.grund}
+            <div className="mt-3 space-y-1">
+              <p className="text-sm text-slate-300">
+                <span className="text-slate-500">Grund: </span>
+                {match.warning.grund}
               </p>
-              <p className="text-sm mt-1">{match.risk_text}</p>
+              <p className="text-sm text-slate-400">{match.risk_text}</p>
             </div>
 
             {match.warning.lot_numbers &&
               match.warning.lot_numbers.length > 0 && (
-                <div className="mt-2 text-sm">
-                  <span className="font-medium">Affected lots: </span>
+                <p className="text-xs text-slate-500 mt-2">
+                  <span className="text-slate-400">Betroffene Chargen: </span>
                   {match.warning.lot_numbers.join(", ")}
-                </div>
+                </p>
               )}
 
             {match.warning.affected_states &&
               match.warning.affected_states.length > 0 && (
-                <div className="mt-1 text-sm">
-                  <span className="font-medium">Affected states: </span>
-                  {match.warning.affected_states.join(", ")}
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {match.warning.affected_states.map((state) => (
+                    <span
+                      key={state}
+                      className="text-xs bg-surface-700 text-slate-400 px-2 py-0.5 rounded-full"
+                    >
+                      {state}
+                    </span>
+                  ))}
                 </div>
               )}
 
             <div className="mt-3 flex items-center gap-4">
-              <div className="text-sm">
-                Match confidence: {Math.round(match.match_score * 100)}%
+              <div className="text-xs text-slate-500">
+                &Uuml;bereinstimmung: {Math.round(match.match_score * 100)}%
               </div>
               <button
                 onClick={() => toggleExpand(key)}
-                className="text-sm underline hover:no-underline"
+                className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
               >
-                {expandedMatch === key ? "Show less" : "Show more"}
+                {expandedMatch === key
+                  ? "Weniger anzeigen"
+                  : "Details anzeigen"}
               </button>
             </div>
 
             {expandedMatch === key && (
-              <div className="mt-3 pt-3 border-t border-current opacity-80">
+              <div className="mt-3 pt-3 border-t border-surface-700">
                 <a
                   href={match.warning.source_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm underline hover:no-underline"
+                  className="text-xs text-amber-400 hover:text-amber-300 underline transition-colors"
                 >
-                  View official warning →
+                  Offizielle Warnung anzeigen &rarr;
                 </a>
               </div>
             )}

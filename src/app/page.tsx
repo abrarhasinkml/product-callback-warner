@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import ReceiptUpload from "@/components/ReceiptUpload";
 import ManualEntry from "@/components/ManualEntry";
 import ResultsView from "@/components/ResultsView";
@@ -19,75 +20,80 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <header className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Product Callback Warner
-          </h1>
-          <p className="text-gray-600">
-            Check if your purchased products have been recalled
-          </p>
-        </header>
+    <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
+      <header className="text-center mb-10">
+        <h1 className="text-3xl sm:text-4xl font-bold text-slate-100 mb-3">
+          Produkt pr&uuml;fen
+        </h1>
+        <p className="text-slate-400 max-w-lg mx-auto">
+          Pr&uuml;fen Sie, ob Ihre gekauften Produkte aktuell zur&uuml;ckgerufen
+          werden
+        </p>
+        <Link
+          href="/warnings"
+          className="inline-block mt-4 text-sm text-amber-400 hover:text-amber-300 transition-colors"
+        >
+          Alle Warnmeldungen ansehen &rarr;
+        </Link>
+      </header>
 
-        {!hasSearched ? (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex border-b mb-6">
-              <button
-                onClick={() => setActiveTab("upload")}
-                className={`px-4 py-2 font-medium ${
-                  activeTab === "upload"
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Upload Receipt
-              </button>
-              <button
-                onClick={() => setActiveTab("manual")}
-                className={`px-4 py-2 font-medium ${
-                  activeTab === "manual"
-                    ? "text-blue-600 border-b-2 border-blue-600"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                Enter Manually
-              </button>
-            </div>
-
-            {activeTab === "upload" ? (
-              <div className="space-y-4">
-                <p className="text-gray-600">
-                  Upload a photo of your receipt. We&apos;ll extract the products
-                  and check them against current recalls.
-                </p>
-                <ReceiptUpload onUploadComplete={handleResults} />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-gray-600">
-                  Enter the products you purchased manually.
-                </p>
-                <ManualEntry onSubmit={handleResults} />
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-6">
+      {!hasSearched ? (
+        <div className="bg-surface-800 border border-surface-700 rounded-2xl p-6 sm:p-8">
+          <div className="flex gap-1 bg-surface-900 rounded-xl p-1 mb-6">
             <button
-              onClick={() => {
-                setHasSearched(false);
-                setMatches([]);
-                setProducts([]);
-              }}
-              className="text-blue-600 hover:text-blue-800 underline"
+              onClick={() => setActiveTab("upload")}
+              className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "upload"
+                  ? "bg-surface-700 text-amber-400 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
             >
-              ← Check different products
+              Beleg hochladen
             </button>
-            <ResultsView matches={matches} products={products} />
+            <button
+              onClick={() => setActiveTab("manual")}
+              className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "manual"
+                  ? "bg-surface-700 text-amber-400 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              Manuell eingeben
+            </button>
           </div>
-        )}
-      </div>
-    </main>
+
+          {activeTab === "upload" ? (
+            <div className="space-y-4">
+              <p className="text-slate-400 text-sm">
+                Laden Sie ein Foto Ihres Kassenbons hoch. Wir extrahieren die
+                Produkte und pr&uuml;fen sie gegen aktuelle R&uuml;ckrufe.
+              </p>
+              <ReceiptUpload onUploadComplete={handleResults} />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <p className="text-slate-400 text-sm">
+                Geben Sie die gekauften Produkte manuell ein.
+              </p>
+              <ManualEntry onSubmit={handleResults} />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <button
+            onClick={() => {
+              setHasSearched(false);
+              setMatches([]);
+              setProducts([]);
+            }}
+            className="text-amber-400 hover:text-amber-300 text-sm transition-colors"
+          >
+            &larr; Andere Produkte pr&uuml;fen
+          </button>
+          <ResultsView matches={matches} products={products} />
+        </div>
+      )}
+    </div>
   );
 }

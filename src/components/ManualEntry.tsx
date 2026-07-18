@@ -36,7 +36,7 @@ export default function ManualEntry({ onSubmit }: ManualEntryProps) {
     try {
       const validProducts = products.filter((p) => p.name.trim().length > 0);
       if (validProducts.length === 0) {
-        throw new Error("Please enter at least one product name");
+        throw new Error("Bitte geben Sie mindestens einen Produktnamen ein");
       }
 
       const response = await fetch("/api/products", {
@@ -46,13 +46,13 @@ export default function ManualEntry({ onSubmit }: ManualEntryProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to submit products");
+        throw new Error("Fehler beim Senden");
       }
 
       const data = await response.json();
       onSubmit({ products: data.products ?? [], matches: data.matches ?? [] });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Submission failed");
+      setError(err instanceof Error ? err.message : "Fehler beim Senden");
     } finally {
       setIsSubmitting(false);
     }
@@ -61,63 +61,66 @@ export default function ManualEntry({ onSubmit }: ManualEntryProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {products.map((product, index) => (
-        <div key={index} className="flex gap-2 items-start">
-          <div className="flex-1 space-y-2">
-            <input
-              type="text"
-              placeholder="Product name *"
-              value={product.name}
-              onChange={(e) => updateProduct(index, "name", e.target.value)}
-              className="w-full px-3 py-2 border rounded"
-              required
-            />
-            <input
-              type="text"
-              placeholder="Manufacturer (optional)"
-              value={product.manufacturer}
-              onChange={(e) =>
-                updateProduct(index, "manufacturer", e.target.value)
-              }
-              className="w-full px-3 py-2 border rounded"
-            />
-            <input
-              type="text"
-              placeholder="Lot/Charge number (optional)"
-              value={product.lot_number}
-              onChange={(e) => updateProduct(index, "lot_number", e.target.value)}
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
+        <div
+          key={index}
+          className="bg-surface-900/50 rounded-xl p-4 space-y-2 relative"
+        >
+          <input
+            type="text"
+            placeholder="Produktname *"
+            value={product.name}
+            onChange={(e) => updateProduct(index, "name", e.target.value)}
+            className="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-sm"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Hersteller (optional)"
+            value={product.manufacturer}
+            onChange={(e) =>
+              updateProduct(index, "manufacturer", e.target.value)
+            }
+            className="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-sm"
+          />
+          <input
+            type="text"
+            placeholder="Chargennummer (optional)"
+            value={product.lot_number}
+            onChange={(e) =>
+              updateProduct(index, "lot_number", e.target.value)
+            }
+            className="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-sm"
+          />
           {products.length > 1 && (
             <button
               type="button"
               onClick={() => removeProduct(index)}
-              className="px-3 py-2 text-red-600 hover:text-red-800"
+              className="absolute top-2 right-2 text-slate-500 hover:text-red-400 text-xs transition-colors"
             >
-              Remove
+              Entfernen
             </button>
           )}
         </div>
       ))}
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-3">
         <button
           type="button"
           onClick={addProduct}
-          className="px-4 py-2 text-blue-600 hover:text-blue-800"
+          className="px-4 py-2 text-sm text-amber-400 hover:text-amber-300 border border-surface-600 rounded-lg hover:border-amber-500/30 transition-colors"
         >
-          + Add Product
+          + Produkt hinzuf&uuml;gen
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          className="px-6 py-2 bg-amber-500 text-surface-900 rounded-lg font-medium text-sm hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {isSubmitting ? "Checking..." : "Check for Recalls"}
+          {isSubmitting ? "Wird gepr\u00fcft..." : "Auf R\u00fcckrufe pr\u00fcfen"}
         </button>
       </div>
 
-      {error && <p className="text-red-500">{error}</p>}
+      {error && <p className="text-red-400 text-sm">{error}</p>}
     </form>
   );
 }
