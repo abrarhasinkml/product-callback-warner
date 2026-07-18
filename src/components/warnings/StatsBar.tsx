@@ -1,58 +1,37 @@
+"use client";
+
 import { Warning } from "@/lib/db/warnings";
+import { useI18n } from "@/lib/i18n/context";
 
 interface StatsBarProps {
   warnings: Warning[];
   stateCount: number;
 }
 
-function relativeDate(date: Date | null): string {
-  if (!date) return "–";
+function relativeDate(date: Date | null, t: ReturnType<typeof useI18n>["t"]): string {
+  if (!date) return "\u2013";
   const now = new Date();
   const d = new Date(date);
   const diffMs = now.getTime() - d.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "Heute";
-  if (diffDays === 1) return "Gestern";
-  if (diffDays < 7) return `vor ${diffDays} Tagen`;
-  if (diffDays < 30) return `vor ${Math.floor(diffDays / 7)} Wochen`;
-  return `vor ${Math.floor(diffDays / 30)} Monaten`;
+  if (diffDays === 0) return t.today;
+  if (diffDays === 1) return t.yesterday;
+  if (diffDays < 7) return t.daysAgo.replace("{n}", String(diffDays));
+  if (diffDays < 30) return t.weeksAgo.replace("{n}", String(Math.floor(diffDays / 7)));
+  return t.monthsAgo.replace("{n}", String(Math.floor(diffDays / 30)));
 }
 
 export default function StatsBar({ warnings, stateCount }: StatsBarProps) {
-  const criticalCount = warnings.filter(
-    (w) => w.urgency_tier === "critical"
-  ).length;
+  const { t } = useI18n();
 
-  const latestDate =
-    warnings.length > 0
-      ? relativeDate(warnings[0].published_at)
-      : "\u2013";
+  const criticalCount = warnings.filter((w) => w.urgency_tier === "critical").length;
+  const latestDate = warnings.length > 0 ? relativeDate(warnings[0].published_at, t) : "\u2013";
 
   const stats = [
-    {
-      label: "Warnungen",
-      value: warnings.length,
-      sub: "letzte 2 Monate",
-      accent: "border-amber-500",
-    },
-    {
-      label: "Kritisch",
-      value: criticalCount,
-      sub: "sofort handeln",
-      accent: "border-red-500",
-    },
-    {
-      label: "Bundesl\u00e4nder",
-      value: stateCount,
-      sub: "betroffen",
-      accent: "border-orange-400",
-    },
-    {
-      label: "Neueste",
-      value: latestDate,
-      sub: "Meldung",
-      accent: "border-emerald-500",
-    },
+    { label: t.statsWarnings, value: warnings.length, sub: t.statsWarningsSub, accent: "border-amber-500" },
+    { label: t.statsCritical, value: criticalCount, sub: t.statsCriticalSub, accent: "border-red-500" },
+    { label: t.statsStates, value: stateCount, sub: t.statsStatesSub, accent: "border-orange-400" },
+    { label: t.statsLatest, value: latestDate, sub: t.statsLatestSub, accent: "border-emerald-500" },
   ];
 
   return (

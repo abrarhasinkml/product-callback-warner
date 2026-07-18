@@ -1,4 +1,7 @@
+"use client";
+
 import { Warning } from "@/lib/db/warnings";
+import { useI18n } from "@/lib/i18n/context";
 
 interface StateDetailPanelProps {
   state: string;
@@ -16,11 +19,9 @@ const TIER_COLORS: Record<string, string> = {
   info: "bg-slate-600/20 text-slate-500",
 };
 
-export default function StateDetailPanel({
-  state,
-  warnings,
-  onClose,
-}: StateDetailPanelProps) {
+export default function StateDetailPanel({ state, warnings, onClose }: StateDetailPanelProps) {
+  const { t } = useI18n();
+
   const tierCounts = URGENCY_ORDER.map((tier) => ({
     tier,
     count: warnings.filter((w) => w.urgency_tier === tier).length,
@@ -32,13 +33,13 @@ export default function StateDetailPanel({
         <div>
           <h3 className="text-lg font-bold text-slate-100">{state}</h3>
           <p className="text-sm text-slate-400">
-            {warnings.length} {warnings.length === 1 ? "Warnung" : "Warnungen"}
+            {warnings.length} {warnings.length === 1 ? t.warning : t.warnings}
           </p>
         </div>
         <button
           onClick={onClose}
           className="text-slate-500 hover:text-slate-300 text-lg leading-none p-1"
-          aria-label="Schlie\u00dfen"
+          aria-label="Close"
         >
           &times;
         </button>
@@ -47,10 +48,7 @@ export default function StateDetailPanel({
       {tierCounts.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {tierCounts.map(({ tier, count }) => (
-            <span
-              key={tier}
-              className={`text-xs font-medium px-2 py-1 rounded ${TIER_COLORS[tier]}`}
-            >
+            <span key={tier} className={`text-xs font-medium px-2 py-1 rounded ${TIER_COLORS[tier]}`}>
               {count} {tier}
             </span>
           ))}
@@ -59,24 +57,15 @@ export default function StateDetailPanel({
 
       <div className="space-y-2 max-h-64 overflow-y-auto">
         {warnings.length === 0 ? (
-          <p className="text-sm text-slate-500">
-            Keine Warnungen f\u00fcr dieses Bundesland.
-          </p>
+          <p className="text-sm text-slate-500">{t.noStateWarnings}</p>
         ) : (
           warnings.map((w) => (
-            <div
-              key={w.id}
-              className="bg-surface-700 rounded-lg p-3 text-sm"
-            >
+            <div key={w.id} className="bg-surface-700 rounded-lg p-3 text-sm">
               <div className="flex items-center gap-2 mb-1">
-                <span
-                  className={`text-xs font-bold px-1.5 py-0.5 rounded ${TIER_COLORS[w.urgency_tier ?? "info"]}`}
-                >
+                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${TIER_COLORS[w.urgency_tier ?? "info"]}`}>
                   {(w.urgency_tier ?? "info").toUpperCase()}
                 </span>
-                <span className="text-slate-100 font-medium truncate">
-                  {w.product_name}
-                </span>
+                <span className="text-slate-100 font-medium truncate">{w.product_name}</span>
               </div>
               <p className="text-slate-400 text-xs">{w.grund}</p>
             </div>

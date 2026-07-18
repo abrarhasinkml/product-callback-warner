@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { CheckResult } from "@/lib/types";
+import { useI18n } from "@/lib/i18n/context";
 
 interface ReceiptUploadProps {
   onUploadComplete: (data: CheckResult) => void;
@@ -10,6 +11,7 @@ interface ReceiptUploadProps {
 export default function ReceiptUpload({
   onUploadComplete,
 }: ReceiptUploadProps) {
+  const { t } = useI18n();
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -29,7 +31,7 @@ export default function ReceiptUpload({
       });
 
       if (!response.ok) {
-        throw new Error("Upload fehlgeschlagen");
+        throw new Error(t.receiptError);
       }
 
       const data = await response.json();
@@ -38,7 +40,7 @@ export default function ReceiptUpload({
         matches: data.matches ?? [],
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload fehlgeschlagen");
+      setError(err instanceof Error ? err.message : t.receiptError);
     } finally {
       setIsUploading(false);
     }
@@ -85,22 +87,16 @@ export default function ReceiptUpload({
         {isUploading ? (
           <div className="space-y-2">
             <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-sm text-slate-400">Wird verarbeitet...</p>
+            <p className="text-sm text-slate-400">{t.receiptProcessing}</p>
           </div>
         ) : (
           <>
-            <p className="text-slate-300 font-medium">
-              Kassenbon hier ablegen
-            </p>
-            <p className="text-xs text-slate-500">
-              oder klicken zum Ausw&auml;hlen
-            </p>
+            <p className="text-slate-300 font-medium">{t.receiptDrop}</p>
+            <p className="text-xs text-slate-500">{t.receiptClick}</p>
           </>
         )}
       </div>
-      {error && (
-        <p className="text-red-400 text-sm mt-4">{error}</p>
-      )}
+      {error && <p className="text-red-400 text-sm mt-4">{error}</p>}
     </div>
   );
 }

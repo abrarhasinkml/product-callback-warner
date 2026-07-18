@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-
-const NAV_LINKS = [
-  { href: "/", label: "Produkt pr\u00fcfen" },
-  { href: "/warnings", label: "Warnmeldungen" },
-];
+import { useI18n } from "@/lib/i18n/context";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { lang, t, toggleLang } = useI18n();
+
+  const navLinks = [
+    { href: "/", label: t.navHome },
+    { href: "/warnings", label: t.navWarnings },
+  ];
 
   return (
     <nav className="bg-surface-800 border-b border-surface-700 sticky top-0 z-50">
@@ -27,7 +29,7 @@ export default function Navbar() {
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map((link) => {
+            {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
@@ -45,41 +47,51 @@ export default function Navbar() {
             })}
           </div>
 
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-surface-700"
-            aria-label="Toggle menu"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleLang}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium border border-surface-600 text-slate-400 hover:text-amber-400 hover:border-amber-500/30 transition-colors"
+              aria-label="Toggle language"
             >
-              {mobileOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
+              {lang === "de" ? "EN" : "DE"}
+            </button>
+
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className="md:hidden p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-surface-700"
+              aria-label="Toggle menu"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                {mobileOpen ? (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
       {mobileOpen && (
         <div className="md:hidden border-t border-surface-700">
           <div className="px-4 py-3 space-y-1">
-            {NAV_LINKS.map((link) => {
+            {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
