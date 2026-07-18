@@ -94,3 +94,59 @@ export async function searchWarnings(
 
   return query<Warning>(sql, params);
 }
+
+export interface WarningsFilteredOptions {
+  since?: string | null;
+  state?: string | null;
+  urgency?: string | null;
+  limit?: number;
+}
+
+export async function getWarningsFiltered(
+  options: WarningsFilteredOptions = {}
+): Promise<Warning[]> {
+  const { since, state, urgency, limit = 100 } = options;
+
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+
+  if (since) {
+    params.push(since);
+    conditions.push(`(published_at >= $${params.length}::date OR published_at IS NULL)`);
+  } else {
+    conditions.push(`(published_at >= NOW() - INTERVAL '2 months' OR published_at IS NULL)`);
+  }
+
+  if (state) {
+    params.push(state);
+    conditions.push(`$${params.length} = ANY(affected_states)`);
+  }
+
+  if (urgency) {
+    params.push(urgency);
+    conditions.push(`urgency_tier = $${params.length}`);
+  }
+
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+  params.push(limit);
+
+  return query<Warning>(
+    `SELECT * FROM warnings ${where} ORDER BY published_at DESC LIMIT $${params.length}`,
+    params
+  );
+}
+
+export interface StateCount {
+  state: string;
+  warning_count: number;
+}
+
+export async function getStateCounts(): Promise<StateCount[]> {
+  return query<StateCount>(
+    `SELECT unnest(affected_states) AS state, COUNT(*)::int AS warning_count
+     FROM warnings
+     WHERE (published_at >= NOW() - INTERVAL '2 months' OR published_at IS NULL)
+     GROUP BY state
+     ORDER BY warning_count DESC`
+  );
+}

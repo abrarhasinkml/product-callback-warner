@@ -1,20 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { CheckResult } from "@/lib/types";
 
 interface ReceiptUploadProps {
   onUploadComplete: (data: CheckResult) => void;
 }
 
-export default function ReceiptUpload({ onUploadComplete }: ReceiptUploadProps) {
+export default function ReceiptUpload({
+  onUploadComplete,
+}: ReceiptUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleFile = async (file: File) => {
     setIsUploading(true);
     setError(null);
 
@@ -28,7 +29,7 @@ export default function ReceiptUpload({ onUploadComplete }: ReceiptUploadProps) 
       });
 
       if (!response.ok) {
-        throw new Error("Upload failed");
+        throw new Error("Upload fehlgeschlagen");
       }
 
       const data = await response.json();
@@ -37,15 +38,41 @@ export default function ReceiptUpload({ onUploadComplete }: ReceiptUploadProps) 
         matches: data.matches ?? [],
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed");
+      setError(err instanceof Error ? err.message : "Upload fehlgeschlagen");
     } finally {
       setIsUploading(false);
     }
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) await handleFile(file);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) await handleFile(file);
+  };
+
   return (
-    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+    <div
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragOver(true);
+      }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={handleDrop}
+      onClick={() => inputRef.current?.click()}
+      className={`border-2 border-dashed rounded-xl p-8 sm:p-12 text-center cursor-pointer transition-all ${
+        dragOver
+          ? "border-amber-400 bg-amber-400/5"
+          : "border-surface-600 hover:border-amber-500/50 hover:bg-surface-700/30"
+      }`}
+    >
       <input
+        ref={inputRef}
         type="file"
         accept="image/*"
         onChange={handleFileChange}
@@ -53,13 +80,27 @@ export default function ReceiptUpload({ onUploadComplete }: ReceiptUploadProps) 
         className="hidden"
         id="receipt-upload"
       />
-      <label
-        htmlFor="receipt-upload"
-        className="cursor-pointer text-blue-600 hover:text-blue-800"
-      >
-        {isUploading ? "Processing..." : "Upload Receipt Image"}
-      </label>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+      <div className="space-y-3">
+        <div className="text-4xl opacity-50">&#x1F4F7;</div>
+        {isUploading ? (
+          <div className="space-y-2">
+            <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-sm text-slate-400">Wird verarbeitet...</p>
+          </div>
+        ) : (
+          <>
+            <p className="text-slate-300 font-medium">
+              Kassenbon hier ablegen
+            </p>
+            <p className="text-xs text-slate-500">
+              oder klicken zum Ausw&auml;hlen
+            </p>
+          </>
+        )}
+      </div>
+      {error && (
+        <p className="text-red-400 text-sm mt-4">{error}</p>
+      )}
     </div>
   );
 }
