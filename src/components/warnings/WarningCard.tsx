@@ -65,7 +65,7 @@ export default function WarningCard({ warning }: WarningCardProps) {
       </div>
 
       <p className="text-sm text-slate-400 mt-2">
-        <span className="text-slate-500">{t.reasonLabel}</span> {warning.grund}
+        <span className="text-slate-500">{t.reasonLabel}</span> {t.gruende[warning.grund] ?? warning.grund}
       </p>
 
       {warning.affected_states && warning.affected_states.length > 0 && (

@@ -84,6 +84,14 @@ const de = {
   daysAgo: "vor {n} Tagen",
   weeksAgo: "vor {n} Wochen",
   monthsAgo: "vor {n} Monaten",
+  gruende: {
+    Krankheitserreger: "Krankheitserreger",
+    "Gesundheitsschädliche Substanz": "Gesundheitsschädliche Substanz",
+    Allergene: "Allergene",
+    Fremdkörper: "Fremdkörper",
+    "Rückstände und Kontaminanten": "Rückstände und Kontaminanten",
+    "Sonstige Gründe": "Sonstige Gründe",
+  } as Record<string, string>,
 };
 
 const en = {
@@ -170,7 +178,15 @@ const en = {
   daysAgo: "{n} days ago",
   weeksAgo: "{n} weeks ago",
   monthsAgo: "{n} months ago",
-} as const;
+  gruende: {
+    Krankheitserreger: "Pathogens",
+    "Gesundheitsschädliche Substanz": "Harmful substance",
+    Allergene: "Allergens",
+    Fremdkörper: "Foreign objects",
+    "Rückstände und Kontaminanten": "Residues & contaminants",
+    "Sonstige Gründe": "Other reasons",
+  } as Record<string, string>,
+};
 
 export type Translations = typeof de;
 

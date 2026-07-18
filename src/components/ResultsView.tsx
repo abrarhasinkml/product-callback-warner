@@ -100,7 +100,7 @@ export default function ResultsView({ matches, products }: ResultsViewProps) {
             <div className="mt-3 space-y-1">
               <p className="text-sm text-slate-300">
                 <span className="text-slate-500">{t.reason} </span>
-                {match.warning.grund}
+                {t.gruende[match.warning.grund] ?? match.warning.grund}
               </p>
               <p className="text-sm text-slate-400">{match.risk_text}</p>
             </div>

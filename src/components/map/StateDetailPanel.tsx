@@ -67,7 +67,7 @@ export default function StateDetailPanel({ state, warnings, onClose }: StateDeta
                 </span>
                 <span className="text-slate-100 font-medium truncate">{w.product_name}</span>
               </div>
-              <p className="text-slate-400 text-xs">{w.grund}</p>
+              <p className="text-slate-400 text-xs">{t.gruende[w.grund] ?? w.grund}</p>
             </div>
           ))
         )}
