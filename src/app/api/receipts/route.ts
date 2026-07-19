@@ -4,6 +4,29 @@ import { createReceipt, createProduct } from "@/lib/db/operations";
 import { matchProducts } from "@/lib/match";
 import { triggerIngestIfNeeded } from "@/lib/ingest/trigger";
 
+const TESSERACT_TIMEOUT_MS = 45_000;
+
+async function runOcr(buffer: Buffer): Promise<string> {
+  const worker = await createWorker("deu", undefined, {
+    langPath: "https://tessdata.projectnaptha.com/4.0.0",
+  });
+
+  const result = await Promise.race([
+    worker.recognize(buffer).then((r) => {
+      worker.terminate();
+      return r.data.text;
+    }),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => {
+        worker.terminate();
+        reject(new Error("OCR timed out"));
+      }, TESSERACT_TIMEOUT_MS)
+    ),
+  ]);
+
+  return result;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -20,12 +43,7 @@ export async function POST(request: NextRequest) {
 
     let text = "";
     try {
-      const worker = await createWorker("deu");
-      const {
-        data: { text: recognized },
-      } = await worker.recognize(buffer);
-      await worker.terminate();
-      text = recognized;
+      text = await runOcr(buffer);
     } catch (ocrError) {
       console.error("OCR failed, continuing without extracted text:", ocrError);
     }
