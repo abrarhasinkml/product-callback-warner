@@ -35,6 +35,9 @@ export default function ReceiptUpload({
       }
 
       const data = await response.json();
+      if (data.ocr_warning) {
+        setError(data.ocr_warning);
+      }
       onUploadComplete({
         products: data.products ?? [],
         matches: data.matches ?? [],

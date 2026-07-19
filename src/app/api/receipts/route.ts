@@ -1,30 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createWorker } from "tesseract.js";
 import { createReceipt, createProduct } from "@/lib/db/operations";
 import { matchProducts } from "@/lib/match";
 import { triggerIngestIfNeeded } from "@/lib/ingest/trigger";
 
-const TESSERACT_TIMEOUT_MS = 45_000;
+const IS_VERCEL = !!process.env.VERCEL;
 
 async function runOcr(buffer: Buffer): Promise<string> {
+  const { createWorker } = await import("tesseract.js");
   const worker = await createWorker("deu", undefined, {
     langPath: "https://tessdata.projectnaptha.com/4.0.0",
   });
 
-  const result = await Promise.race([
-    worker.recognize(buffer).then((r) => {
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => {
       worker.terminate();
-      return r.data.text;
-    }),
-    new Promise<never>((_, reject) =>
-      setTimeout(() => {
-        worker.terminate();
-        reject(new Error("OCR timed out"));
-      }, TESSERACT_TIMEOUT_MS)
-    ),
-  ]);
+      reject(new Error("OCR timed out"));
+    }, 45_000)
+  );
 
-  return result;
+  const ocr = worker.recognize(buffer).then((r) => {
+    worker.terminate();
+    return r.data.text;
+  });
+
+  return Promise.race([ocr, timeout]);
 }
 
 export async function POST(request: NextRequest) {
@@ -42,10 +41,15 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
 
     let text = "";
-    try {
-      text = await runOcr(buffer);
-    } catch (ocrError) {
-      console.error("OCR failed, continuing without extracted text:", ocrError);
+
+    if (IS_VERCEL) {
+      console.log("Skipping OCR on Vercel — Tesseract requires self-hosted runtime");
+    } else {
+      try {
+        text = await runOcr(buffer);
+      } catch (ocrError) {
+        console.error("OCR failed, continuing without extracted text:", ocrError);
+      }
     }
 
     const receipt = await createReceipt({
@@ -80,7 +84,9 @@ export async function POST(request: NextRequest) {
         matches,
         ocr_warning:
           text.length === 0
-            ? "OCR could not extract text from this image; try manual entry."
+            ? IS_VERCEL
+              ? "OCR is not available on the hosted version. Please use manual entry to check your products."
+              : "OCR could not extract text from this image; try manual entry."
             : undefined,
       },
       { status: 200 }
