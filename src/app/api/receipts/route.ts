@@ -1,12 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createWorker } from "tesseract.js";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 import { createReceipt, createProduct } from "@/lib/db/operations";
 import { matchProducts } from "@/lib/match";
 import { triggerIngestIfNeeded } from "@/lib/ingest/trigger";
 
-const UPLOAD_DIR = path.join(process.cwd(), "uploads");
+const TESSERACT_TIMEOUT_MS = 45_000;
+
+async function runOcr(buffer: Buffer): Promise<string> {
+  const worker = await createWorker("deu", undefined, {
+    langPath: "https://tessdata.projectnaptha.com/4.0.0",
+  });
+
+  const result = await Promise.race([
+    worker.recognize(buffer).then((r) => {
+      worker.terminate();
+      return r.data.text;
+    }),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => {
+        worker.terminate();
+        reject(new Error("OCR timed out"));
+      }, TESSERACT_TIMEOUT_MS)
+    ),
+  ]);
+
+  return result;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,26 +39,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await mkdir(UPLOAD_DIR, { recursive: true });
-    const fileName = `${Date.now()}-${file.name}`;
-    const filePath = path.join(UPLOAD_DIR, fileName);
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(filePath, buffer);
 
     let text = "";
     try {
-      const worker = await createWorker("deu");
-      const {
-        data: { text: recognized },
-      } = await worker.recognize(filePath);
-      await worker.terminate();
-      text = recognized;
+      text = await runOcr(buffer);
     } catch (ocrError) {
       console.error("OCR failed, continuing without extracted text:", ocrError);
     }
 
     const receipt = await createReceipt({
-      image_path: filePath,
+      image_path: file.name,
       raw_ocr_text: text || null,
     });
 
