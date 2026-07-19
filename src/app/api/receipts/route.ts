@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createWorker } from "tesseract.js";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 import { createReceipt, createProduct } from "@/lib/db/operations";
 import { matchProducts } from "@/lib/match";
 import { triggerIngestIfNeeded } from "@/lib/ingest/trigger";
-
-const UPLOAD_DIR = path.join(process.cwd(), "uploads");
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,18 +16,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await mkdir(UPLOAD_DIR, { recursive: true });
-    const fileName = `${Date.now()}-${file.name}`;
-    const filePath = path.join(UPLOAD_DIR, fileName);
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(filePath, buffer);
 
     let text = "";
     try {
       const worker = await createWorker("deu");
       const {
         data: { text: recognized },
-      } = await worker.recognize(filePath);
+      } = await worker.recognize(buffer);
       await worker.terminate();
       text = recognized;
     } catch (ocrError) {
@@ -39,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     const receipt = await createReceipt({
-      image_path: filePath,
+      image_path: file.name,
       raw_ocr_text: text || null,
     });
 
