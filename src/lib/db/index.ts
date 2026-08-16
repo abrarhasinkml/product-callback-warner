@@ -3,6 +3,7 @@ import { Pool, PoolConfig } from "pg";
 const config: PoolConfig = {
   connectionString:
     process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
     "postgresql://postgres:postgres@localhost:5432/product_callback_warner",
   max: 20,
   idleTimeoutMillis: 30000,
