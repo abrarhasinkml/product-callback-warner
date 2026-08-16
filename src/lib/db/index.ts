@@ -1,14 +1,16 @@
 import { Pool, PoolConfig } from "pg";
 
+const connectionString =
+  process.env.DATABASE_URL ||
+  process.env.POSTGRES_URL ||
+  "postgresql://postgres:postgres@localhost:5432/product_callback_warner";
+
 const config: PoolConfig = {
-  connectionString:
-    process.env.DATABASE_URL ||
-    process.env.POSTGRES_URL ||
-    "postgresql://postgres:postgres@localhost:5432/product_callback_warner",
+  connectionString,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
-  ssl: process.env.DATABASE_URL?.includes("supabase")
+  ssl: connectionString.includes("supabase")
     ? { rejectUnauthorized: false }
     : undefined,
 };
