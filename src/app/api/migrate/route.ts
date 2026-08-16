@@ -7,12 +7,6 @@ const MIGRATIONS = [
     sql: `
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE IF NOT EXISTS migrations (
-  id SERIAL PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE,
-  executed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
 CREATE TABLE IF NOT EXISTS warnings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   source_url TEXT NOT NULL UNIQUE,
@@ -88,6 +82,15 @@ export async function POST() {
     });
 
     const results: string[] = [];
+
+    // Ensure migrations tracking table exists first
+    await migratePool.query(`
+      CREATE TABLE IF NOT EXISTS migrations (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL UNIQUE,
+        executed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )
+    `);
 
     for (const migration of MIGRATIONS) {
       // Check if already executed
