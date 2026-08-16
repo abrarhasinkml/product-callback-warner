@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pool } from "@/lib/db";
+import { Pool } from "pg";
 
 const MIGRATIONS = [
   {
@@ -72,11 +72,26 @@ CREATE INDEX IF NOT EXISTS idx_matches_urgency_tier ON matches(urgency_tier);
 
 export async function POST() {
   try {
+    // Create a dedicated pool for migration with SSL bypass
+    const connectionString =
+      process.env.DATABASE_URL ||
+      process.env.POSTGRES_URL ||
+      "postgresql://postgres:postgres@localhost:5432/product_callback_warner";
+
+    const isLocal =
+      connectionString.includes("localhost") ||
+      connectionString.includes("127.0.0.1");
+
+    const migratePool = new Pool({
+      connectionString,
+      ssl: isLocal ? undefined : { rejectUnauthorized: false },
+    });
+
     const results: string[] = [];
 
     for (const migration of MIGRATIONS) {
       // Check if already executed
-      const existing = await pool.query(
+      const existing = await migratePool.query(
         "SELECT name FROM migrations WHERE name = $1",
         [migration.name]
       );
@@ -87,13 +102,14 @@ export async function POST() {
       }
 
       // Run migration
-      await pool.query(migration.sql);
-      await pool.query("INSERT INTO migrations (name) VALUES ($1)", [
+      await migratePool.query(migration.sql);
+      await migratePool.query("INSERT INTO migrations (name) VALUES ($1)", [
         migration.name,
       ]);
       results.push(`Executed: ${migration.name}`);
     }
 
+    await migratePool.end();
     return NextResponse.json({ success: true, results });
   } catch (error) {
     console.error("Migration failed:", error);
