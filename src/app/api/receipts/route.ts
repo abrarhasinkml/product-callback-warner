@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createReceipt, createProduct } from "@/lib/db/operations";
 import { matchProducts } from "@/lib/match";
-import { triggerIngestIfNeeded } from "@/lib/ingest/trigger";
 import { parseReceiptText } from "@/lib/ocr/parser";
 
 async function runServerOcr(buffer: Buffer): Promise<string> {
@@ -73,8 +72,6 @@ export async function POST(request: NextRequest) {
       createdProducts.length > 0
         ? await matchProducts(createdProducts.map((p) => p.id))
         : [];
-
-    triggerIngestIfNeeded();
 
     return NextResponse.json(
       {

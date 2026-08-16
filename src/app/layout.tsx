@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import { I18nProvider } from "@/lib/i18n/context";
+import { triggerIngestIfNeeded } from "@/lib/ingest/trigger";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -17,6 +18,10 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Trigger warning ingestion in the background when someone visits the website
+  // This runs on the server and doesn't block the page load
+  triggerIngestIfNeeded();
+
   return (
     <html lang="de" className={inter.variable}>
       <body className="antialiased min-h-screen flex flex-col">
