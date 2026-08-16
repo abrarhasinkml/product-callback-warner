@@ -1,36 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createWorker } from "tesseract.js";
 import { createReceipt, createProduct } from "@/lib/db/operations";
 import { matchProducts } from "@/lib/match";
 import { triggerIngestIfNeeded } from "@/lib/ingest/trigger";
+import { parseReceiptText } from "@/lib/ocr/parser";
 
-const TESSERACT_TIMEOUT_MS = 45_000;
-
-async function runOcr(buffer: Buffer): Promise<string> {
+async function runServerOcr(buffer: Buffer): Promise<string> {
+  const { createWorker } = await import("tesseract.js");
   const worker = await createWorker("deu", undefined, {
     langPath: "https://tessdata.projectnaptha.com/4.0.0",
   });
 
-  const result = await Promise.race([
-    worker.recognize(buffer).then((r) => {
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => {
       worker.terminate();
-      return r.data.text;
-    }),
-    new Promise<never>((_, reject) =>
-      setTimeout(() => {
-        worker.terminate();
-        reject(new Error("OCR timed out"));
-      }, TESSERACT_TIMEOUT_MS)
-    ),
-  ]);
+      reject(new Error("OCR timed out"));
+    }, 45_000)
+  );
 
-  return result;
+  const ocr = worker.recognize(buffer).then((r) => {
+    worker.terminate();
+    return r.data.text;
+  });
+
+  return Promise.race([ocr, timeout]);
 }
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("receipt") as File | null;
+    const clientText = formData.get("text") as string | null;
 
     if (!file) {
       return NextResponse.json(
@@ -41,11 +40,15 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    let text = "";
-    try {
-      text = await runOcr(buffer);
-    } catch (ocrError) {
-      console.error("OCR failed, continuing without extracted text:", ocrError);
+    // Use client-provided text if available, otherwise run server-side OCR
+    let text = clientText || "";
+
+    if (!text) {
+      try {
+        text = await runServerOcr(buffer);
+      } catch (ocrError) {
+        console.error("Server OCR failed, continuing without extracted text:", ocrError);
+      }
     }
 
     const receipt = await createReceipt({
@@ -92,41 +95,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-function parseReceiptText(text: string): Array<{
-  name: string;
-  manufacturer: string | null;
-  lot_number: string | null;
-}> {
-  const lines = text.split("\n").filter((line) => line.trim().length > 0);
-  const products: Array<{
-    name: string;
-    manufacturer: string | null;
-    lot_number: string | null;
-  }> = [];
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.length < 3 || trimmed.length > 100) continue;
-    if (/^\d+$/.test(trimmed)) continue;
-    if (/^(EUR|€|CHF|\$)/.test(trimmed)) continue;
-    if (/^(Summe|Total|MwSt|VAT|Tax)/i.test(trimmed)) continue;
-    if (/^(Karte|Bar|Cash|Change)/i.test(trimmed)) continue;
-
-    const lotMatch = trimmed.match(/(?:L|Lot|Charge|Chg)[:\s]*(\d+)/i);
-    const lotNumber = lotMatch ? lotMatch[1] : null;
-
-    const name = trimmed.replace(/(?:L|Lot|Charge|Chg)[:\s]*\d+/i, "").trim();
-
-    if (name.length >= 3) {
-      products.push({
-        name,
-        manufacturer: null,
-        lot_number: lotNumber,
-      });
-    }
-  }
-
-  return products.slice(0, 20);
 }
