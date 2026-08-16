@@ -5,14 +5,14 @@ const connectionString =
   process.env.POSTGRES_URL ||
   "postgresql://postgres:postgres@localhost:5432/product_callback_warner";
 
+const isLocal = connectionString.includes("localhost") || connectionString.includes("127.0.0.1");
+
 const config: PoolConfig = {
   connectionString,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
-  ssl: connectionString.includes("supabase")
-    ? { rejectUnauthorized: false }
-    : undefined,
+  ssl: isLocal ? undefined : { rejectUnauthorized: false },
 };
 
 export const pool = new Pool(config);
