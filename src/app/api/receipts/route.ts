@@ -2,10 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createReceipt, createProduct } from "@/lib/db/operations";
 import { matchProducts } from "@/lib/match";
 import { triggerIngestIfNeeded } from "@/lib/ingest/trigger";
+import { parseReceiptText } from "@/lib/ocr/parser";
 
-const IS_VERCEL = !!process.env.VERCEL;
-
-async function runOcr(buffer: Buffer): Promise<string> {
+async function runServerOcr(buffer: Buffer): Promise<string> {
   const { createWorker } = await import("tesseract.js");
   const worker = await createWorker("deu", undefined, {
     langPath: "https://tessdata.projectnaptha.com/4.0.0",
@@ -30,6 +29,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("receipt") as File | null;
+    const clientText = formData.get("text") as string | null;
 
     if (!file) {
       return NextResponse.json(
@@ -40,15 +40,14 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    let text = "";
+    // Use client-provided text if available, otherwise run server-side OCR
+    let text = clientText || "";
 
-    if (IS_VERCEL) {
-      console.log("Skipping OCR on Vercel — Tesseract requires self-hosted runtime");
-    } else {
+    if (!text) {
       try {
-        text = await runOcr(buffer);
+        text = await runServerOcr(buffer);
       } catch (ocrError) {
-        console.error("OCR failed, continuing without extracted text:", ocrError);
+        console.error("Server OCR failed, continuing without extracted text:", ocrError);
       }
     }
 
@@ -84,9 +83,7 @@ export async function POST(request: NextRequest) {
         matches,
         ocr_warning:
           text.length === 0
-            ? IS_VERCEL
-              ? "OCR is not available on the hosted version. Please use manual entry to check your products."
-              : "OCR could not extract text from this image; try manual entry."
+            ? "OCR could not extract text from this image; try manual entry."
             : undefined,
       },
       { status: 200 }
@@ -98,41 +95,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
-
-function parseReceiptText(text: string): Array<{
-  name: string;
-  manufacturer: string | null;
-  lot_number: string | null;
-}> {
-  const lines = text.split("\n").filter((line) => line.trim().length > 0);
-  const products: Array<{
-    name: string;
-    manufacturer: string | null;
-    lot_number: string | null;
-  }> = [];
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.length < 3 || trimmed.length > 100) continue;
-    if (/^\d+$/.test(trimmed)) continue;
-    if (/^(EUR|€|CHF|\$)/.test(trimmed)) continue;
-    if (/^(Summe|Total|MwSt|VAT|Tax)/i.test(trimmed)) continue;
-    if (/^(Karte|Bar|Cash|Change)/i.test(trimmed)) continue;
-
-    const lotMatch = trimmed.match(/(?:L|Lot|Charge|Chg)[:\s]*(\d+)/i);
-    const lotNumber = lotMatch ? lotMatch[1] : null;
-
-    const name = trimmed.replace(/(?:L|Lot|Charge|Chg)[:\s]*\d+/i, "").trim();
-
-    if (name.length >= 3) {
-      products.push({
-        name,
-        manufacturer: null,
-        lot_number: lotNumber,
-      });
-    }
-  }
-
-  return products.slice(0, 20);
 }
