@@ -26,6 +26,7 @@ body {
   background-color: var(--color-surface-900);
   color: var(--color-slate-300);
   font-family: "Inter", system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
 }
 
 * {
