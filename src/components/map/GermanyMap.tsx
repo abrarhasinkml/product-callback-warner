@@ -36,7 +36,7 @@ export default function GermanyMap({
   };
 
   return (
-    <div className="bg-surface-800 rounded-xl p-4">
+    <div className="bg-surface-800 rounded-xl p-4 overflow-hidden">
       <h3 className="text-sm font-semibold text-slate-400 mb-3">{t.mapTitle}</h3>
       <svg viewBox="0 0 580 720" className="w-full max-w-sm mx-auto touch-manipulation">
         {STATES.map((state) => {

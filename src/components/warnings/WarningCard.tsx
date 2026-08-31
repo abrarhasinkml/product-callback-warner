@@ -45,7 +45,7 @@ export default function WarningCard({ warning }: WarningCardProps) {
 
   return (
     <div
-      className={`bg-surface-800 rounded-xl border-l-4 ${style.border} p-4 transition-all hover:bg-surface-700/50 touch-manipulation`}
+      className={`bg-surface-800 rounded-xl border-l-4 ${style.border} p-4 transition-all hover:bg-surface-700/50 touch-manipulation min-w-0 overflow-hidden`}
     >
       <div
         className="cursor-pointer"
