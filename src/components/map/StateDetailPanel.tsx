@@ -28,7 +28,7 @@ export default function StateDetailPanel({ state, warnings, onClose }: StateDeta
   })).filter((t) => t.count > 0);
 
   return (
-    <div className="bg-surface-800 rounded-xl p-4 space-y-4">
+    <div className="bg-surface-800 rounded-xl p-4 space-y-4 overflow-hidden">
       <div className="flex items-start justify-between">
         <div>
           <h3 className="text-lg font-bold text-slate-100">{state}</h3>

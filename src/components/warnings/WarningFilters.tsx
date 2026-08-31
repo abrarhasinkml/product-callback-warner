@@ -28,7 +28,7 @@ export default function WarningFilters({
   ];
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-3 overflow-hidden">
       <div className="flex flex-wrap gap-1">
         {urgencyOptions.map((opt) => (
           <button

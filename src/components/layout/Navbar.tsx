@@ -50,7 +50,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2">
             <button
               onClick={toggleLang}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium border border-surface-600 text-slate-400 hover:text-amber-400 hover:border-amber-500/30 transition-colors"
+              className="px-3 py-2 rounded-lg text-xs font-medium border border-surface-600 text-slate-400 hover:text-amber-400 hover:border-amber-500/30 transition-colors touch-target"
               aria-label="Toggle language"
             >
               {lang === "de" ? "EN" : "DE"}
@@ -58,7 +58,7 @@ export default function Navbar() {
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-surface-700"
+              className="md:hidden p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-surface-700 touch-target"
               aria-label="Toggle menu"
             >
               <svg
@@ -98,7 +98,7 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`block px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors touch-target ${
                     isActive
                       ? "bg-surface-700 text-amber-400"
                       : "text-slate-400 hover:text-slate-100 hover:bg-surface-700/50"

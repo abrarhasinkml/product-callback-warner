@@ -72,7 +72,7 @@ export default function ManualEntry({ onSubmit }: ManualEntryProps) {
             placeholder={t.productName}
             value={product.name}
             onChange={(e) => updateProduct(index, "name", e.target.value)}
-            className="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-sm"
+            className="w-full px-3 py-3 bg-surface-700 border border-surface-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-sm"
             required
           />
           <input
@@ -82,7 +82,7 @@ export default function ManualEntry({ onSubmit }: ManualEntryProps) {
             onChange={(e) =>
               updateProduct(index, "manufacturer", e.target.value)
             }
-            className="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-sm"
+            className="w-full px-3 py-3 bg-surface-700 border border-surface-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-sm"
           />
           <input
             type="text"
@@ -91,13 +91,13 @@ export default function ManualEntry({ onSubmit }: ManualEntryProps) {
             onChange={(e) =>
               updateProduct(index, "lot_number", e.target.value)
             }
-            className="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-sm"
+            className="w-full px-3 py-3 bg-surface-700 border border-surface-600 rounded-lg text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 text-sm"
           />
           {products.length > 1 && (
             <button
               type="button"
               onClick={() => removeProduct(index)}
-              className="absolute top-2 right-2 text-slate-500 hover:text-red-400 text-xs transition-colors"
+              className="absolute top-2 right-2 p-2 -m-2 text-slate-500 hover:text-red-400 text-xs transition-colors touch-target"
             >
               {t.remove}
             </button>
@@ -109,14 +109,14 @@ export default function ManualEntry({ onSubmit }: ManualEntryProps) {
         <button
           type="button"
           onClick={addProduct}
-          className="px-4 py-2 text-sm text-amber-400 hover:text-amber-300 border border-surface-600 rounded-lg hover:border-amber-500/30 transition-colors"
+          className="px-4 py-3 text-sm text-amber-400 hover:text-amber-300 border border-surface-600 rounded-lg hover:border-amber-500/30 transition-colors touch-target"
         >
           {t.addProduct}
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="px-6 py-2 bg-amber-500 text-surface-900 rounded-lg font-medium text-sm hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="px-6 py-3 bg-amber-500 text-surface-900 rounded-lg font-medium text-sm hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors touch-target"
         >
           {isSubmitting ? t.submitChecking : t.submitCheck}
         </button>

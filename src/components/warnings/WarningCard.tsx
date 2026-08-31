@@ -45,45 +45,53 @@ export default function WarningCard({ warning }: WarningCardProps) {
 
   return (
     <div
-      className={`bg-surface-800 rounded-xl border-l-4 ${style.border} p-4 transition-all hover:bg-surface-700/50`}
+      className={`bg-surface-800 rounded-xl border-l-4 ${style.border} p-4 transition-all hover:bg-surface-700/50 touch-manipulation min-w-0 overflow-hidden`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className={`text-xs font-bold px-2 py-0.5 rounded ${style.badge} ${style.badgeText}`}>
-              {urgencyLabel[tier] ?? tier}
-            </span>
-            <span className="text-xs text-slate-500">
-              {relativeDate(warning.published_at, t)}
-            </span>
+      <div
+        className="cursor-pointer"
+        onClick={() => setExpanded(!expanded)}
+        onTouchEnd={(e) => {
+          e.preventDefault();
+          setExpanded(!expanded);
+        }}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <span className={`text-xs font-bold px-2 py-0.5 rounded ${style.badge} ${style.badgeText}`}>
+                {urgencyLabel[tier] ?? tier}
+              </span>
+              <span className="text-xs text-slate-500">
+                {relativeDate(warning.published_at, t)}
+              </span>
+            </div>
+            <h3 className="text-slate-100 font-semibold truncate">{warning.product_name}</h3>
+            {warning.manufacturer && (
+              <p className="text-sm text-slate-400 truncate">{warning.manufacturer}</p>
+            )}
           </div>
-          <h3 className="text-slate-100 font-semibold truncate">{warning.product_name}</h3>
-          {warning.manufacturer && (
-            <p className="text-sm text-slate-400 truncate">{warning.manufacturer}</p>
-          )}
+        </div>
+
+        <p className="text-sm text-slate-400 mt-2">
+          <span className="text-slate-500">{t.reasonLabel}</span> {t.gruende[warning.grund] ?? warning.grund}
+        </p>
+
+        {warning.affected_states && warning.affected_states.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {warning.affected_states.map((state) => (
+              <span key={state} className="text-xs bg-surface-600 text-slate-300 px-2 py-0.5 rounded-full">
+                {state}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center justify-center mt-3 py-1">
+          <span className="text-xs text-amber-400">
+            {expanded ? t.expandLess : t.expandMore}
+          </span>
         </div>
       </div>
-
-      <p className="text-sm text-slate-400 mt-2">
-        <span className="text-slate-500">{t.reasonLabel}</span> {t.gruende[warning.grund] ?? warning.grund}
-      </p>
-
-      {warning.affected_states && warning.affected_states.length > 0 && (
-        <div className="flex flex-wrap gap-1 mt-2">
-          {warning.affected_states.map((state) => (
-            <span key={state} className="text-xs bg-surface-600 text-slate-300 px-2 py-0.5 rounded-full">
-              {state}
-            </span>
-          ))}
-        </div>
-      )}
-
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="text-xs text-amber-400 hover:text-amber-300 mt-3 transition-colors"
-      >
-        {expanded ? t.expandLess : t.expandMore}
-      </button>
 
       {expanded && (
         <div className="mt-3 pt-3 border-t border-surface-600 space-y-2 text-sm">
@@ -98,7 +106,7 @@ export default function WarningCard({ warning }: WarningCardProps) {
               href={warning.source_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block text-amber-400 hover:text-amber-300 underline text-xs"
+              className="inline-block text-amber-400 hover:text-amber-300 underline text-xs touch-target"
             >
               {t.viewOfficial}
             </a>

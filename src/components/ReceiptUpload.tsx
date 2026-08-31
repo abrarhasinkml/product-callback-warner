@@ -95,52 +95,74 @@ export default function ReceiptUpload({
   };
 
   return (
-    <div
-      onDragOver={(e) => {
-        e.preventDefault();
-        setDragOver(true);
-      }}
-      onDragLeave={() => setDragOver(false)}
-      onDrop={handleDrop}
-      onClick={() => inputRef.current?.click()}
-      className={`border-2 border-dashed rounded-xl p-8 sm:p-12 text-center cursor-pointer transition-all ${
-        dragOver
-          ? "border-amber-400 bg-amber-400/5"
-          : "border-surface-600 hover:border-amber-500/50 hover:bg-surface-700/30"
-      }`}
-    >
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        disabled={isUploading}
-        className="hidden"
-        id="receipt-upload"
-      />
-      <div className="space-y-3">
-        <div className="text-4xl opacity-50">&#x1F4F7;</div>
-        {isUploading ? (
-          <div className="space-y-2">
-            <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-sm text-slate-400">{getOcrStatusText()}</p>
-            {ocrProgress && ocrProgress.progress > 0 && ocrProgress.progress < 1 && (
-              <div className="w-48 h-1.5 bg-slate-700 rounded-full mx-auto overflow-hidden">
-                <div
-                  className="h-full bg-amber-400 rounded-full transition-all duration-300"
-                  style={{ width: `${ocrProgress.progress * 100}%` }}
-                />
-              </div>
-            )}
-          </div>
-        ) : (
-          <>
-            <p className="text-slate-300 font-medium">{t.receiptDrop}</p>
-            <p className="text-xs text-slate-500">{t.receiptClick}</p>
-          </>
-        )}
+    <div className="space-y-4">
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+        onClick={() => inputRef.current?.click()}
+        className={`border-2 border-dashed rounded-xl p-10 sm:p-12 text-center cursor-pointer transition-all touch-manipulation touch-target ${
+          dragOver
+            ? "border-amber-400 bg-amber-400/5"
+            : "border-surface-600 hover:border-amber-500/50 hover:bg-surface-700/30"
+        }`}
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          disabled={isUploading}
+          className="hidden"
+          id="receipt-upload"
+        />
+        <div className="space-y-3">
+          <div className="text-4xl opacity-50">&#x1F4F7;</div>
+          {isUploading ? (
+            <div className="space-y-2">
+              <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-sm text-slate-400">{getOcrStatusText()}</p>
+              {ocrProgress && ocrProgress.progress > 0 && ocrProgress.progress < 1 && (
+                <div className="w-48 h-1.5 bg-slate-700 rounded-full mx-auto overflow-hidden">
+                  <div
+                    className="h-full bg-amber-400 rounded-full transition-all duration-300"
+                    style={{ width: `${ocrProgress.progress * 100}%` }}
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <p className="text-slate-300 font-medium">{t.receiptDrop}</p>
+              <p className="text-xs text-slate-500">{t.receiptClick}</p>
+            </>
+          )}
+        </div>
+        {error && <p className="text-red-400 text-sm mt-4">{error}</p>}
       </div>
-      {error && <p className="text-red-400 text-sm mt-4">{error}</p>}
+
+      {/* Camera capture button - visible on mobile */}
+      <div className="sm:hidden">
+        <input
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleFileChange}
+          disabled={isUploading}
+          className="hidden"
+          id="receipt-camera"
+        />
+        <label
+          htmlFor="receipt-camera"
+          className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-surface-700 hover:bg-surface-600 rounded-xl text-slate-300 font-medium cursor-pointer transition-colors touch-target"
+        >
+          <span>&#x1F4F7;</span>
+          <span>{t.receiptTakePhoto || "Take Photo"}</span>
+        </label>
+      </div>
     </div>
   );
 }
