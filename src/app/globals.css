@@ -61,3 +61,14 @@ body {
 .animate-bounce-slow {
   animation: bounce-slow 2s ease-in-out infinite;
 }
+
+/* Minimum touch target size for mobile accessibility */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Prevent double-tap zoom on touch devices */
+.touch-manipulation {
+  touch-action: manipulation;
+}

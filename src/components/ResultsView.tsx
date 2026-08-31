@@ -131,7 +131,7 @@ export default function ResultsView({ matches, products }: ResultsViewProps) {
               </div>
               <button
                 onClick={() => toggleExpand(key)}
-                className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                className="text-xs text-amber-400 hover:text-amber-300 transition-colors touch-target px-2 py-1 -mx-2"
               >
                 {expandedMatch === key ? t.showLess : t.showMore}
               </button>

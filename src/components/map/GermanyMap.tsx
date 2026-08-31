@@ -38,19 +38,31 @@ export default function GermanyMap({
   return (
     <div className="bg-surface-800 rounded-xl p-4">
       <h3 className="text-sm font-semibold text-slate-400 mb-3">{t.mapTitle}</h3>
-      <svg viewBox="0 0 580 720" className="w-full max-w-sm mx-auto">
+      <svg viewBox="0 0 580 720" className="w-full max-w-sm mx-auto touch-manipulation">
         {STATES.map((state) => {
           const normalized = normalizeState(state.id);
           const count = stateCounts[normalized] ?? 0;
           return (
             <g key={state.id}>
+              {/* Invisible larger hit area for touch devices */}
+              <path
+                d={state.path}
+                fill="transparent"
+                stroke="transparent"
+                strokeWidth={20}
+                className="cursor-pointer"
+                onClick={() => onStateClick(normalized)}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  onStateClick(normalized);
+                }}
+              />
               <path
                 d={state.path}
                 fill={getColor(state.id)}
                 stroke={getStroke(state.id)}
                 strokeWidth={getStrokeWidth(state.id)}
-                className="cursor-pointer transition-all duration-200 hover:opacity-80"
-                onClick={() => onStateClick(normalized)}
+                className="cursor-pointer transition-all duration-200 hover:opacity-80 pointer-events-none"
               >
                 <title>
                   {state.label}: {count} {count === 1 ? t.warning : t.warnings}
