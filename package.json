@@ -13,8 +13,11 @@
     "db:generate": "tsx src/lib/db/generate-migration.ts"
   },
   "dependencies": {
+    "@auth/pg-adapter": "^1.0.0",
+    "bcryptjs": "^2.4.3",
     "fuse.js": "^7.0.0",
     "next": "^16.2.10",
+    "next-auth": "^4.24.15",
     "pg": "^8.13.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -24,6 +27,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.6",
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.20.1",
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.17",
