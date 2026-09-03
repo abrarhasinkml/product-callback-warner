@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/context";
+import { hashPassword } from "@/lib/auth/hash";
 
 export default function LoginForm() {
   const { t } = useI18n();
@@ -20,9 +21,12 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
+      // Hash password client-side before sending to server
+      const hashedPassword = await hashPassword(password);
+
       const result = await signIn("credentials", {
         email,
-        password,
+        password: hashedPassword,
         redirect: false,
       });
 

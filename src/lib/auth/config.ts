@@ -19,6 +19,12 @@ export const authOptions: NextAuthOptions = {
         email: { type: "email" },
         password: { type: "password" },
       },
+      /**
+       * Authorize credentials.
+       *
+       * Expects password to be pre-hashed with SHA-256 on the client side.
+       * Compares the SHA-256 hash with the bcrypt-hashed password in the database.
+       */
       authorize: async (credentials) => {
         if (!credentials?.email || !credentials?.password) {
           return null;
@@ -29,6 +35,8 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        // credentials.password is already SHA-256 hashed by the client
+        // user.password_hash is bcrypt(SHA-256(password))
         const isValid = await bcrypt.compare(
           credentials.password,
           user.password_hash

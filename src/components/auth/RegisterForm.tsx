@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/context";
+import { hashPassword } from "@/lib/auth/hash";
 
 export default function RegisterForm() {
   const { t } = useI18n();
@@ -32,10 +33,13 @@ export default function RegisterForm() {
     setLoading(true);
 
     try {
+      // Hash password client-side before sending to server
+      const hashedPassword = await hashPassword(password);
+
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password: hashedPassword }),
       });
 
       if (!response.ok) {

@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { createUser, getUserByEmail } from "@/lib/db/users";
 
+/**
+ * Registration endpoint.
+ *
+ * Expects password to be pre-hashed with SHA-256 on the client side.
+ * The SHA-256 hash is then bcrypt-hashed for secure storage.
+ * This ensures the raw password never leaves the browser.
+ */
 export async function POST(request: NextRequest) {
   try {
     const { name, email, password } = await request.json();
@@ -13,9 +20,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (password.length < 8) {
+    // Password should be a SHA-256 hash (64 hex characters)
+    if (typeof password !== "string" || password.length !== 64) {
       return NextResponse.json(
-        { error: "Password must be at least 8 characters" },
+        { error: "Invalid password format" },
         { status: 400 }
       );
     }
@@ -28,6 +36,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // bcrypt-hash the SHA-256 hash for storage
     const password_hash = await bcrypt.hash(password, 12);
 
     const user = await createUser({
