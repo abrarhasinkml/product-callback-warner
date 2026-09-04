@@ -8,7 +8,7 @@ import { getUserByEmail } from "@/lib/db/users";
 
 export const authOptions: NextAuthOptions = {
   adapter: PostgresAdapter(pool) as NextAuthOptions["adapter"],
-  session: { strategy: "database" },
+  session: { strategy: "jwt" },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -60,9 +60,15 @@ export const authOptions: NextAuthOptions = {
     newUser: "/profile",
   },
   callbacks: {
-    session: async ({ session, user }) => {
-      if (session.user) {
-        (session.user as { id: string }).id = user.id;
+    jwt: async ({ token, user }) => {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    session: async ({ session, token }) => {
+      if (session.user && token?.id) {
+        (session.user as { id: string }).id = token.id as string;
       }
       return session;
     },
